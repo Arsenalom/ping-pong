@@ -52,29 +52,20 @@ class Player(GameSprite):
         bullets.add(bullet)
 
 
-class Enemy(GameSprite):
-    def update(self):
-        self.rect.y += self.speed
-        global lost
-        if self.rect.y > win_height:
-            self.rect.x = randint(80, win_width - 80)
-            self.rect.y = 0
-            lost = lost + 1
-class Bullet(GameSprite):
-    def update(self):
-        self.rect.y += self.speed
-        if self.rect.y < 0:
-            self.kill()
+
+           
 win_width = 700
 win_height = 500
 display.set_caption("Shooter")
 window = display.set_mode((win_width, win_height))
 background = transform.scale(image.load(img_back), (win_width, win_height))
 
-ship = Player(img_hero, 5, win_height - 100, 80, 100, 10)
+roscet1 = Player('roscet.png', 30, 200,4,5,150)
+roscet2 = Player('roscet.png', 520,200,4,50,150)
 
-monsters = sprite.Group()
-for i in range(1, 6):
+boll = GameSprite('tennisboll.png',200,200,4,50,50)
+
+monsters = sprite.Group():
     monster = Enemy(img_enemy, randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
     monsters.add(monster)
 bullets = sprite.Group()
