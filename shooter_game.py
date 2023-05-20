@@ -1,126 +1,98 @@
-from pygame import *
-from random import randint
-
-font.init()
-font1 = font.Font(Arial, 80)
-win = font1.render('YOU WIN!', True, (255, 255, 255))
-lose = font1.render('YOU LOSE!', True, (180, 0, 0))
-
-
-font2 = font.Font(Arial, 36)
-
-
-
-mixer.init()
-mixer.music.load('space.ogg')
-mixer.music.play()
-fire_sound = mixer.Sound('fire.ogg')
-
-
-img_back = "galaxy.jpg" 
-img_bullet = "bullet.png" 
-img_hero = "rocket.png" 
-img_enemy = "ufo.png" 
-score = 0 
-goal = 10 
-lost = 0 
-max_lost = 3 
-
-class GameSprite(sprite.Sprite):
-    def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed):
-        sprite.Sprite.__init__(self)
-        self.image = transform.scale(image.load(player_image), (size_x, size_y))
-        self.speed = player_speed
-        self.rect = self.image.get_rect()
-        self.rect.x = player_x
-        self.rect.y = player_y
-
-    def reset(self):
-        window.blit(self.image, (self.rect.x, self.rect.y))
-
-
-class Player(GameSprite):
-    def update(self):
-        keys = key.get_pressed()
-        if keys[K_LEFT] and self.rect.x > 5:
-            self.rect.x -= self.speed
-        if keys[K_RIGHT] and self.rect.x < win_width - 80:
-            self.rect.x += self.speed
+from import pygame
+from import time
+from random import randit
+pygame.init()
+white = (255, 255, 255)
+yellow = (255, 255, 102)
+black = (0, 0, 0)
+red = (213, 50, 80)
+green = (0, 255, 0)
+blue = (50, 153, 213)
+dis_width = 800
+dis_height = 600
+dis = pygame.display.set_mode((dis_width, dis_height))
+pygame.display.set_caption('Змейка')
+clock = pygame.time.Clock()
+snake_block = 10
+snake_speed = 15
+font_style = pygame.font.SysFont("bahnschrift", 25)
+score_font = pygame.font.SysFont("comicsansms", 35)
  
-    def fire(self):
-        bullet = Bullet(img_bullet, self.rect.centerx, self.rect.top, 15, 20, -15)
-        bullets.add(bullet)
-
-
-
-           
-win_width = 700
-win_height = 500
-display.set_caption("Shooter")
-window = display.set_mode((win_width, win_height))
-background = transform.scale(image.load(img_back), (win_width, win_height))
-
-roscet1 = Player('roscet.png', 30, 200,4,5,150)
-roscet2 = Player('roscet.png', 520,200,4,50,150)
-
-boll = GameSprite('tennisboll.png',200,200,4,50,50)
-
-monsters = sprite.Group():
-    monster = Enemy(img_enemy, randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
-    monsters.add(monster)
-bullets = sprite.Group()
-
-finish = False
-
-run = True 
-while run:
-    for e in event.get():
-        if e.type == QUIT:
-            run = False
-        elif e.type == KEYDOWN:
-            if e.key == K_SPACE:
-                fire_sound.play()
-                ship.fire()
+def Your_score(score):
+   value = score_font.render("Ваш счёт: " + str(score), True, yellow)
+   dis.blit(value, [0, 0])
  
-    if not finish:
-        window.blit(background,(0,0))
-        ship.update()
-        monsters.update()
-        bullets.update()
-        ship.reset()
-        collides = sprite.groupcollide(monsters, bullets, True, True)
-        for c in collides:
-            score = score + 1
-            monster = Enemy(img_enemy, randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
-            monsters.add(monster)
-        if sprite.spritecollide(ship, monsters, False) or lost >= max_lost:
-            finish = True
-            window.blit(lose, (200, 200))
-        if score >= goal:
-            finish = True
-            window.blit(win, (200, 200))
-        text = font2.render("Счет: " + str(score), 1, (255, 255, 255))
-        window.blit(text, (10, 20))
-        text_lose = font2.render("Пропущено: " + str(lost), 1, (255, 255, 255))
-        window.blit(text_lose, (10, 50))
-
-
-        display.update()
-    else:
-        finish = False
-        score = 0
-        lost = 0
-        for b in bullets:
-            b.kill()
-        for m in monsters:
-            m.kill()
-
-
-        time.delay(3000)
-        for i in range(1, 6):
-            monster = Enemy(img_enemy, randint(80, win_width - 80), -40, 80, 50, randint(1, 5))
-            monsters.add(monster)
-      
-
-
-    time.delay(50)
+def our_snake(snake_block, snake_list):
+   for x in snake_list:
+       pygame.draw.rect(dis, black, [x[0], x[1], snake_block, snake_block])
+ 
+def message(msg, color):
+   mesg = font_style.render(msg, True, color)
+   dis.blit(mesg, [dis_width / 6, dis_height / 3])
+ 
+def gameLoop():
+   game_over = False
+   game_close = False
+   x1 = dis_width / 2
+   y1 = dis_height / 2
+   x1_change = 0
+   y1_change = 0
+   snake_List = []
+   Length_of_snake = 1
+   foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
+   foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
+   while not game_over:
+       while game_close == True:
+           dis.fill(blue)
+           message("Вы проиграли! Нажмите Q для выхода или C для повторной игры", red)
+           Your_score(Length_of_snake - 1)
+           pygame.display.update()
+           for event in pygame.event.get():
+               if event.type == pygame.KEYDOWN:
+                   if event.key == pygame.K_q:
+                       game_over = True
+                       game_close = False
+                   if event.key == pygame.K_c:
+                       gameLoop()
+       for event in pygame.event.get():
+           if event.type == pygame.QUIT:
+               game_over = True
+           if event.type == pygame.KEYDOWN:
+               if event.key == pygame.K_LEFT:
+                   x1_change = -snake_block
+                   y1_change = 0
+               elif event.key == pygame.K_RIGHT:
+                   x1_change = snake_block
+                   y1_change = 0
+               elif event.key == pygame.K_UP:
+                   y1_change = -snake_block
+                   x1_change = 0
+               elif event.key == pygame.K_DOWN:
+                   y1_change = snake_block
+                   x1_change = 0
+       if x1 >= dis_width or x1 < 0 or y1 >= dis_height or y1 < 0:
+           game_close = True
+       x1 += x1_change
+       y1 += y1_change
+       dis.fill(blue)
+       pygame.draw.rect(dis, green, [foodx, foody, snake_block, snake_block])
+       snake_Head = []
+       snake_Head.append(x1)
+       snake_Head.append(y1)
+       snake_List.append(snake_Head)
+       if len(snake_List) > Length_of_snake:
+           del snake_List[0]
+       for x in snake_List[:-1]:
+           if x == snake_Head:
+               game_close = True
+       our_snake(snake_block, snake_List)
+       Your_score(Length_of_snake - 1)
+       pygame.display.update()
+       if x1 == foodx and y1 == foody:
+           foodx = round(random.randrange(0, dis_width - snake_block) / 10.0) * 10.0
+           foody = round(random.randrange(0, dis_height - snake_block) / 10.0) * 10.0
+           Length_of_snake += 1
+       clock.tick(snake_speed)
+   pygame.quit()
+   quit()
+gameLoop()
